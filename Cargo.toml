@@ -1,0 +1,9 @@
+[package]
+name = "internetbroadcastingservice"
+version = "0.1.1"
+authors = ["unpatched <unpatched@unpatched>"]
+description = "A yet incomplete meme distribution platform. Sorry, no code yet available."
+keywords = ["streaming", "av", "broadcasting"]
+license ="Apache-2.0/MIT"
+
+[dependencies]
