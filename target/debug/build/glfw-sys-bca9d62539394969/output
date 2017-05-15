@@ -1,0 +1,68 @@
+running: "cmake" "/home/unpatched/.cargo/registry/src/github.com-1ecc6299db9ec823/glfw-sys-3.2.1/." "-DGLFW_BUILD_EXAMPLES=OFF" "-DGLFW_BUILD_TESTS=OFF" "-DGLFW_BUILD_DOCS=OFF" "-DCMAKE_INSTALL_PREFIX=/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out" "-DCMAKE_C_FLAGS= -ffunction-sections -fdata-sections -fPIC -m64" "-DCMAKE_C_COMPILER=/usr/bin/cc" "-DCMAKE_CXX_FLAGS= -ffunction-sections -fdata-sections -fPIC -m64" "-DCMAKE_CXX_COMPILER=/usr/bin/c++" "-DCMAKE_BUILD_TYPE=Debug"
+-- The C compiler identification is GNU 5.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - not found
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Could NOT find Vulkan (missing:  VULKAN_LIBRARY VULKAN_INCLUDE_DIR) 
+-- Using X11 for window creation
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Found X11: /usr/lib/x86_64-linux-gnu/libX11.so
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/build
+running: "cmake" "--build" "." "--target" "install" "--config" "Debug" "--" "-j4"
+Scanning dependencies of target glfw
+[  6%] Building C object src/CMakeFiles/glfw.dir/monitor.c.o
+[ 12%] Building C object src/CMakeFiles/glfw.dir/input.c.o
+[ 18%] Building C object src/CMakeFiles/glfw.dir/init.c.o
+[ 25%] Building C object src/CMakeFiles/glfw.dir/context.c.o
+[ 31%] Building C object src/CMakeFiles/glfw.dir/vulkan.c.o
+[ 37%] Building C object src/CMakeFiles/glfw.dir/window.c.o
+[ 43%] Building C object src/CMakeFiles/glfw.dir/x11_init.c.o
+[ 50%] Building C object src/CMakeFiles/glfw.dir/x11_monitor.c.o
+[ 56%] Building C object src/CMakeFiles/glfw.dir/x11_window.c.o
+[ 62%] Building C object src/CMakeFiles/glfw.dir/xkb_unicode.c.o
+[ 68%] Building C object src/CMakeFiles/glfw.dir/linux_joystick.c.o
+[ 75%] Building C object src/CMakeFiles/glfw.dir/posix_time.c.o
+[ 81%] Building C object src/CMakeFiles/glfw.dir/posix_tls.c.o
+[ 87%] Building C object src/CMakeFiles/glfw.dir/glx_context.c.o
+[ 93%] Building C object src/CMakeFiles/glfw.dir/egl_context.c.o
+[100%] Linking C static library libglfw3.a
+[100%] Built target glfw
+Install the project...
+-- Install configuration: "Debug"
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/include/GLFW
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/include/GLFW/glfw3native.h
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/include/GLFW/glfw3.h
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Config.cmake
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3ConfigVersion.cmake
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Targets.cmake
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Targets-debug.cmake
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/pkgconfig/glfw3.pc
+-- Installing: /home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/libglfw3.a
+cargo:root=/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out
+cargo:rustc-link-search=native=/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib
+cargo:rustc-link-lib=dylib=glfw3

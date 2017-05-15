@@ -6,4 +6,42 @@ description = "A yet incomplete meme distribution platform. Sorry, no code yet a
 keywords = ["streaming", "av", "broadcasting"]
 license ="Apache-2.0/MIT"
 
+[profile.release]
+debug = true
+panic = 'abort'
+
 [dependencies]
+glutin = "0.8.0"
+winit = "*"
+rscam = "*"
+error-chain = "0.10.0"
+
+[dependencies.gfx]
+git = "https://github.com/gfx-rs/gfx.git"
+branch = "master"
+
+[dependencies.gfx_app]
+git = "https://github.com/gfx-rs/gfx.git"
+branch = "master"
+
+[dependencies.gfx_core]
+git = "https://github.com/gfx-rs/gfx.git"
+branch = "master"
+
+[dependencies.gfx_window_glutin]
+git = "https://github.com/gfx-rs/gfx.git"
+branch = "master"
+
+[dependencies.gfx_device_gl]
+git = "https://github.com/gfx-rs/gfx.git"
+branch = "master"
+
+[dependencies.av]
+git = "https://github.com/unpatched/rust-av.git"
+branch = "master"
+
+[dependencies.portaudio-rs]
+version = "*"
+
+[dependencies.chrono]
+version = "0.3.0"

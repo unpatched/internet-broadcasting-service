@@ -1,0 +1,1 @@
+{"rustc":26014949083843375,"features":"[\"default\", \"env_logger\", \"log\", \"logging\"]","target":9399314963126484307,"profile":731176819336294830,"deps":[["quasi_codegen v0.32.0",4741241860083268671]],"local":{"Precalculated":"0.23.1"},"rustflags":[]}

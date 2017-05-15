@@ -1,0 +1,8 @@
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/include/GLFW/glfw3native.h
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/include/GLFW/glfw3.h
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Config.cmake
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3ConfigVersion.cmake
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Targets.cmake
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/cmake/glfw3/glfw3Targets-debug.cmake
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/pkgconfig/glfw3.pc
+/home/unpatched/internetbroadcastingservice/target/debug/build/glfw-sys-bca9d62539394969/out/lib/libglfw3.a
