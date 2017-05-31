@@ -1,8 +1,0 @@
-cargo:rustc-link-search=native=/usr/lib
-cargo:rustc-link-lib=dylib=avutil
-cargo:rustc-link-lib=dylib=avformat
-cargo:rustc-link-lib=dylib=avcodec
-cargo:rustc-link-lib=dylib=avdevice
-cargo:rustc-link-lib=dylib=avfilter
-cargo:rustc-link-lib=dylib=swresample
-cargo:rustc-link-lib=dylib=swscale

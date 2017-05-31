@@ -1,5 +1,0 @@
-cargo:rustc-link-search=native=/usr/local/lib
-cargo:rustc-link-lib=portaudio
-cargo:rustc-link-lib=asound
-cargo:rustc-link-lib=m
-cargo:rustc-link-lib=pthread
