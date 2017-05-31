@@ -95,11 +95,13 @@ impl AudioEncoderInfo {
     }
 }
 
-pub trait Muxers<R,W> where R: AVRead, W: AVWrite {
-    fn open_mux(output_format: String, destination: W) -> av::errors::Result<MuxerBuilder>;
+pub trait Muxers<W: AVWrite> {
+    fn open_mux(&mut self, output_format: String, destinaton: W) -> av::errors::Result<MuxerBuilder>;
+}
+pub trait Demuxers<R: AVRead> {
     fn open_demux(source: R) -> av::errors::Result<Demuxer>;
 }
-
+#[derive(Debug)]
 pub enum TranscoderError {
     InvalidEncoderConfiguration,
     InvalidAudioEncoder(av::Error),
@@ -108,26 +110,22 @@ pub enum TranscoderError {
     InvalidVideoEncoder(av::Error),
 }
 
-pub struct TranscodingMetaData<R: AVRead, W: AVWrite> {
+pub struct TranscodingMetaData {
     pub name:           String,
     pub audio_encoders: Option<Result<Vec<audio::Encoder>, TranscoderError>>,
     pub video_encoders: Option<Result<Vec<video::Encoder>, TranscoderError>>,
     pub audio_decoders: Option<Result<Vec<audio::Decoder>, TranscoderError>>,
     pub video_decoders: Option<Result<Vec<video::Decoder>, TranscoderError>>,
-    pub source:         Option<R>,
-    pub destination:    Option<W>,
 }
 
-pub trait Transcoder<R: AVRead,W: AVWrite> {
-    fn prepare_transcoder(name: String, e_configs: &[EncoderConfig], d_configs: &[DecoderConfig]) -> Result<TranscodingMetaData<R,W>, TranscoderError>;
-    fn add_source(&mut self, source: R);
-    fn add_destination(&mut self, destination: W);
+pub trait Transcoder {
+    fn prepare_transcoder(name: String, e_configs: &[EncoderConfig], d_configs: &[DecoderConfig]) -> Result<TranscodingMetaData, TranscoderError>;
     fn create_decoders(demux: Demuxer) -> Result<Vec<Decoder>, Error>;
 }
 
-impl<R,W> Transcoder<R,W> for TranscodingMetaData<R,W> where R: AVRead, W: AVWrite {
+impl Transcoder for TranscodingMetaData{
 //  Prepare a transcoding session
-    fn prepare_transcoder(name: String, e_configs: &[EncoderConfig], d_configs: &[DecoderConfig]) -> Result<TranscodingMetaData<R,W>, TranscoderError> {
+    fn prepare_transcoder(name: String, e_configs: &[EncoderConfig], d_configs: &[DecoderConfig]) -> Result<TranscodingMetaData, TranscoderError> {
        let mut audio_enc_vec: Vec<audio::Encoder> = Vec::<audio::Encoder>::new();
        let mut video_enc_vec: Vec<video::Encoder> = Vec::<video::Encoder>::new();
        let mut audio_dec_vec: Vec<audio::Decoder> = Vec::<audio::Decoder>::new();
@@ -190,52 +188,48 @@ impl<R,W> Transcoder<R,W> for TranscodingMetaData<R,W> where R: AVRead, W: AVWri
            }
         }
 //      TODO: Add loop for configuring Decoders, also parallelize it.
-        let ae = match audio_enc_vec.len() > 0 {
+        let audio_encoders = match audio_enc_vec.len() > 0 {
             true  => { Some(Ok(audio_enc_vec)) },
             false => { None                    },
         };
-        let ve = match video_enc_vec.len() > 0 {
+        let video_encoders = match video_enc_vec.len() > 0 {
             true  => { Some(Ok(video_enc_vec)) },
             false => { None                    },
         };
-        let ad = match audio_dec_vec.len() > 0 {
+        let audio_decoders = match audio_dec_vec.len() > 0 {
             true  => { Some(Ok(audio_dec_vec)) },
             false => { None                    },
         };
-        let vd = match video_dec_vec.len() > 0 {
+        let video_decoders = match video_dec_vec.len() > 0 {
             true  => { Some(Ok(video_dec_vec)) },
             false => { None                    },
         };
 
         Ok(TranscodingMetaData {
-            name:           name,
-            audio_encoders: ae,
-            video_encoders: ve,
-            audio_decoders: ad,
-            video_decoders: vd,
-            source:         None,
-            destination:    None,
+            name,
+            audio_encoders,
+            video_encoders,
+            audio_decoders,
+            video_decoders,
         })
-    }
-    fn add_source(&mut self, source: R) {
-        self.source = Some(source);
-    }
-    fn add_destination(&mut self, destination: W) {
-        self.destination = Some(destination);
     }
     fn create_decoders(demux: Demuxer) -> Result<Vec<Decoder>, Error> {
         demux.streams().map(|stream| Decoder::from_stream(&stream)).collect::<av::Result<Vec<Decoder>>>()
     }
 }
 
-impl<R,W> Muxers<R,W> for TranscodingMetaData<R,W> where R: AVRead,  W: AVWrite {
-    fn open_mux(output_format: String, destination: W) -> av::errors::Result<MuxerBuilder> {
-        if let Some(x) = OutputFormat::from_name(&output_format) {
-            Muxer::new(x, destination)
-        } else {
-            Err(Error::from_kind(ErrorKind::Msg("Unable to open Muxer".to_string())))
+impl<W> Muxers<W> for TranscodingMetaData where W: AVWrite {
+    fn open_mux(&mut self, output_format: String, destination: W) -> av::errors::Result<MuxerBuilder> {
+        match OutputFormat::from_name(&output_format) {
+            Some(x) => {
+                    Muxer::new(x, destination)
+            },
+            None => { Err(Error::from_kind(ErrorKind::Msg("Unable to use output format.".to_string()))) },
         }
     }
+}
+
+impl<R> Demuxers<R> for TranscodingMetaData where R: AVRead {
     fn open_demux(source: R) -> av::errors::Result<Demuxer> {
         Demuxer::open(source)
     }
