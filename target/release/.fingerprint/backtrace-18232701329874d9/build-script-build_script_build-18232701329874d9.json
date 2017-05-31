@@ -1,0 +1,1 @@
+{"rustc":26014949083843375,"features":"[\"backtrace-sys\", \"coresymbolication\", \"cpp_demangle\", \"dbghelp\", \"dbghelp-sys\", \"default\", \"dladdr\", \"kernel32-sys\", \"libbacktrace\", \"libunwind\", \"winapi\"]","target":7402640007161621033,"profile":10093462760320012837,"deps":[],"local":{"Precalculated":"0.3.1"},"rustflags":[]}

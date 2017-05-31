@@ -1,0 +1,4 @@
+cargo:rerun-if-changed=src/codegen/mod.rs
+cargo:rerun-if-changed=src/codegen/error.rs
+cargo:rerun-if-changed=src/codegen/helpers.rs
+cargo:rerun-if-changed=src/codegen/struct_layout.rs

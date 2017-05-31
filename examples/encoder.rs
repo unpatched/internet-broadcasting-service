@@ -99,7 +99,6 @@ fn f32_slice_as_u8_slice(slice: &[f32]) -> &[u8] {
 }
 
 fn main() {
-    let mut status = Status::Recording;
 //  While u32 these need to be <= u16::MAX.
 //  This is so terrible.
     let height = 720;
@@ -150,7 +149,7 @@ fn main() {
 //  The channel the video encoder uses to communicate with the muxer.  usize is the stream id of the encoder.
     let (video_muxer_tx, video_muxer_rx) = mpsc::sync_channel::<(usize, Packet)>(1);
 //  The channel the audio capture device we just configured will use to communicate with the encoders.
-    let (audio_tx, audio_rx) = mpsc::sync_channel::<(Instant, Vec<u8>)>(1);
+    let (audio_tx, audio_rx) = mpsc::sync_channel::<(AVRational, Instant, Vec<u8>)>(1);
 //  The channel the audio _encoder uses to communicate with the muxer. usize is the stream id of the encoder.
     let (audio_muxer_tx, audio_muxer_rx) = mpsc::sync_channel::<(usize, Packet)>(1);
 
@@ -173,6 +172,11 @@ fn main() {
                 'capture_loop: loop {
 //  capture() is blocking.  So this works. Should probably put this loop to sleep. TODO: Calculate duration to put thread to
 //  sleep.
+                    if start_time.elapsed() >= Duration::new(10,0) {
+                        camera.stop();
+                        break 'capture_loop
+                    }
+ 
                     if let Ok(capture) = camera.capture() {
 //                      Admittedly this for loop is not optimal, but because capture() is blocking and it's /just/
 //                      heat it's not a priority to fix this.  What it does is convert RGB24 to RGBA.  It needs to be
@@ -190,12 +194,10 @@ fn main() {
                             Ok(x)  => { swizzle_vec.clear() },
                             Err(e) => { break 'capture_loop },
                         };
-                        match status {
-                            Status::Stopping => { camera.stop();  break 'capture_loop }
-                            _                => {},
-                        }
                     }
                 }
+                drop(capture1_canvas_tx);
+                drop(capture1_encoder_tx);
             },
             _ => { panic!("Capture device was not successfully started") },
         }
@@ -261,33 +263,25 @@ fn main() {
             println!("{:?}", ts.index());
             frame.set_pts(ts.index());
             if let Ok(x) = capture1_encoder_rx.recv() {
-                match status {
-                    Status::Recording => {
-                        frame.fill_channel(0, &x.1);
-                        if let Ok(pkts) = h264_encoder.encode(&mut frame) {
-//                                 ^^^^ This is an interator, in Rust, iterators are lazy
+                frame.fill_channel(0, &x.1);
+                if let Ok(pkts) = h264_encoder.encode(&mut frame) {
+//                         ^^^^ This is an interator, in Rust, iterators are lazy
 //                             You must call them in a loop or .iter() over it's contents.
 //                             This effectively means that the for loop below is where the /actual/
 //                             encoding takes place.
-                            for pkt in pkts {
-                                match video_muxer_tx.send((stream_id, pkt.unwrap())) {
-                                    Ok(x)  => (),
-                                    Err(e) => { break 'video_encoding_loop },
-                                }
-                            }
+                    for pkt in pkts {
+                        match video_muxer_tx.send((stream_id, pkt.unwrap())) {
+                            Ok(x)  => (),
+                            Err(e) => { break 'video_encoding_loop },
                         }
-                    },
-                    Status::Stopping => {
-                        if let Ok(pkts) = h264_encoder.flush() {
-                            for pkt in pkts {
-                                if let Err(e) = video_muxer_tx.send((stream_id, pkt.unwrap())) {
-                                    break 'video_encoding_loop
-                                }
-                            }
-                        }
-
-                    },
-                    Status::None => { panic!("Status What?") },
+                    }
+                }
+            }
+        }
+        if let Ok(pkts) = h264_encoder.flush() {
+            for pkt in pkts {
+                if let Ok(x) = video_muxer_tx.send((stream_id, pkt.unwrap())) {
+                    
                 }
             }
         }
@@ -315,7 +309,7 @@ fn main() {
         //                println!("{:?}", x);
                         let x = ::f32_slice_as_u8_slice(&x).to_vec();
                         ts.calc_index_since(start_time);
-                        match audio_tx.send((Instant::now(), x.to_vec())) {
+                        match audio_tx.send((audio_avr, Instant::now(), x.to_vec())) {
                             Ok(x) => {},
                             Err(e) => {},
                             
@@ -327,23 +321,13 @@ fn main() {
         }
     });
     let aac_enc = transcoder_metadata.audio_encoders.unwrap().unwrap().pop().unwrap();
-    mb.add_stream_from_encoder(&aac_enc).unwrap();
+//    mb.add_stream_from_encoder(&aac_enc).unwrap();
     let mut muxer = match mb.open() {
         Ok(x)  => x,
         Err(e) => { panic!("{:?}", e) },
     };
     muxer.dump_info();
     'muxer_recv_loop: loop {
-        if start_time.elapsed() >= Duration::new(10,0) {
-            status = Status::Stopping;
-            'flush_encoders: loop {
-                let (stream_id, packet) = match video_muxer_rx.recv() {
-                    Ok(recv) => { println!("Received Packet"); (recv.0, recv.1) },
-                    Err(e)   => { muxer.close(); break 'flush_encoders },
-                };
-            }
-            break 'muxer_recv_loop
-        }
         let (stream_id, packet) = match video_muxer_rx.recv() {
             Ok(recv) => { println!("Recieved Packet"); (recv.0, recv.1)    },
             Err(e)   => { muxer.close(); break 'muxer_recv_loop},

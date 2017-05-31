@@ -1,0 +1,4 @@
+cargo:rerun-if-changed=build.rs
+cargo:rerun-if-changed=in/*
+cargo:rerun-if-changed=tests/afl_seeds.rs
+cargo:rerun-if-changed=tests/libiberty-demangle-expected
