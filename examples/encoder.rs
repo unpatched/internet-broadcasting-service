@@ -33,6 +33,7 @@ use std::time::{
     Instant,
     Duration,
 };
+use std::cmp::min;
 use av::common::{
     Packet,
 };
@@ -46,13 +47,15 @@ use std::fs::{
 use std::sync::mpsc;
 
 use av::video;
+use av::audio;
 
 use av::ffi::{
     AVRational,
     AVCodecID,
     AVPixelFormat,
-    AVSampleFormat,
 };
+
+use av::ffi::AVSampleFormat::AV_SAMPLE_FMT_FLTP;
 
 use av::io::{
     AVRead,
@@ -63,8 +66,6 @@ use av::format::{
     Muxer,
     OutputFormat,
 };
-
-use av::ffi::AVSampleFormat::AV_SAMPLE_FMT_FLTP;
 
 use av::audio::constants::{
     CHANNEL_LAYOUT_MONO,
@@ -82,13 +83,6 @@ use gfx::{
 use gfx::memory::Usage;
 use gfx::buffer::Role;
 const CLEAR_COLOR: [f32; 4] = [1.0, 0.0, 1.0, 0.5];
-
-#[derive(Debug, Copy, Clone)]
-pub enum Status {
-    None,
-    Recording,
-    Stopping,
-}
 
 //  Used to convert f32 slices to u8 slices.
 //  useful for audio from portaudio -> ffmpeg.
@@ -321,7 +315,41 @@ fn main() {
         }
     });
     let aac_enc = transcoder_metadata.audio_encoders.unwrap().unwrap().pop().unwrap();
-//    mb.add_stream_from_encoder(&aac_enc).unwrap();
+    mb.add_stream_from_encoder(&aac_enc).unwrap();
+    thread::spawn(move || {
+        let audio_mux_tx = audio_muxer_tx.clone();
+        let audio_frame_size = aac_enc.frame_size().unwrap_or(10000);
+        let mut frame = match audio::Frame::new(audio_frame_size, aac_enc.sample_rate(), AV_SAMPLE_FMT_FLTP, CHANNEL_LAYOUT_STEREO) {
+            Ok(f)  => f,
+            Err(e) => { panic!("{:?}", e); },
+        };
+
+        'audio_frame_fill: loop {
+            match audio_rx.recv() {
+                Ok(x) => {
+                    let mut ts = x.0;
+                    let data = x.1;
+                    ts.calc_index_since(start_time);
+                    println!("Audio Ts: {:?}", ts.index());
+                    frame.set_pts(ts.index());
+                    let buf_len = min(data.len(), frame.data_mut()[0].len().clone());
+                    frame.data_mut()[0][..buf_len].copy_from_slice(&data[..buf_len]);
+                    let pkt = match aac_enc.encode(&mut frame) {
+                        Ok(x) => x,
+                        Err(e) => { panic!("Dropped Audio Frame");},
+                    };
+                    for pkt in pkt {
+                        if let Ok(x) = audio_mux_tx.send((0, pkt.unwrap())) {
+                        } else {
+                            ()
+                        }
+                    }
+                },
+                Err(e) => { panic!("FAiled to recv audio frame"); },
+            }
+        }
+    });
+
     let mut muxer = match mb.open() {
         Ok(x)  => x,
         Err(e) => { panic!("{:?}", e) },

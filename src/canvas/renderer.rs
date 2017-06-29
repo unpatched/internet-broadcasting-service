@@ -80,15 +80,15 @@ gfx_defines!{
     }
 }
 // Holds everything needed to render sources with gfx-rs.
-pub struct Canvas<R: gfx::Resources>{
+pub struct Canvas<R: gfx::Resources, C: gfx::CommandBuffer<R>>{
     pub window:  glutin::Window,
     pub device:  gfx_device_gl::Device,
     pub factory: gfx_device_gl::Factory, 
-    pub encoder: gfx::Encoder<gfx_device_gl::Resources,gfx_device_gl::CommandBuffer>,
+    pub encoder: gfx::Encoder<R, C>,
     pub e_loop:  glutin::EventsLoop,
     pub height:  u16,
     pub width:   u16,
-    pub tex:     gfx::handle::Texture<gfx_device_gl::Resources, R8_G8_B8_A8>,
+    pub tex:     gfx::handle::Texture<R, R8_G8_B8_A8>,
     pub iic:     gfx::texture::ImageInfoCommon<Format>,
     pub bundle:  Bundle<R, pipe::Data<R>>,
 }
@@ -104,9 +104,9 @@ pub enum CanvasError {
     UnableToViewTextureAsShaderResource(gfx::ResourceViewError),
 }
 
-impl<R> Canvas<R> where R: gfx::Resources {
+impl<R,C> Canvas<R,C> where R: gfx::Resources, C: gfx::CommandBuffer<R> {
 //  Create a new Canvas with a specific size.  
-    pub fn new(height: u16, width: u16, wb: WindowBuilder) -> Result<Canvas<gfx_device_gl::Resources>, CanvasError> {
+    pub fn new(height: u16, width: u16, wb: WindowBuilder) -> Result<Canvas<R,C>, CanvasError> {
 
         let e_loop = glutin::EventsLoop::new();
         let (window, device, mut factory, rtv, stv) =
@@ -156,12 +156,12 @@ impl<R> Canvas<R> where R: gfx::Resources {
         Ok(Canvas { window, device, factory, encoder, e_loop, height, width, tex, iic, bundle     })
     }
 //  Update the texture with the upload buffer.  Should probably be called after update_ubuf().
-    pub fn update_tex(&mut self, upload_buf: &Buffer<gfx_device_gl::Resources,u8>) {
+    pub fn update_tex(&mut self, upload_buf: &Buffer<R,u8>) {
         self.encoder.copy_buffer_to_texture_raw(upload_buf.raw(), 0, &self.tex.raw(), None, self.iic.clone());
     }
 //  Updates the dbuf with the texture.  If using the Canvas for an editor you might consider updating this after
 //  calling update_tex.
-    pub fn update_dbuf(&mut self, download_buf: &Buffer<gfx_device_gl::Resources,u8>) {
+    pub fn update_dbuf(&mut self, download_buf: &Buffer<R,u8>) {
         self.encoder.copy_texture_to_buffer_raw(&self.tex.raw(), None, self.iic.clone(), download_buf.raw(), 0);
     }
 }
